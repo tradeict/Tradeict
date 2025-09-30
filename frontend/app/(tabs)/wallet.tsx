@@ -6,10 +6,14 @@ import {
   ScrollView,
   RefreshControl,
   FlatList,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import VideoAdButton from '../../components/VideoAdButton';
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import axios from 'axios';
 import Constants from 'expo-constants';
 
@@ -21,6 +25,7 @@ interface Transaction {
   amount: number;
   description: string;
   created_at: string;
+  virtual_money_type?: string;
   trade_details?: any;
 }
 
@@ -68,7 +73,7 @@ export default function Wallet() {
     });
   };
 
-  const getTransactionIcon = (type: string) => {
+  const getTransactionIcon = (type: string, moneyType?: string) => {
     switch (type.toLowerCase()) {
       case 'buy':
         return 'arrow-up-circle';
@@ -82,18 +87,28 @@ export default function Wallet() {
         return 'add-circle';
       case 'coupon_redemption':
         return 'gift';
+      case 'daily_login':
+        return 'calendar';
+      case 'video_ad':
+        return 'play-circle';
+      case 'registration':
+        return 'person-add';
       default:
         return 'swap-horizontal';
     }
   };
 
   const getTransactionColor = (type: string, amount: number) => {
-    if (type.toLowerCase() === 'profit' || amount > 0) {
+    if (['profit', 'daily_login', 'video_ad', 'registration'].includes(type.toLowerCase()) || amount > 0) {
       return '#34C759';
-    } else if (type.toLowerCase() === 'loss' || amount < 0) {
+    } else if (['loss', 'coupon_redemption'].includes(type.toLowerCase()) || amount < 0) {
       return '#FF3B30';
     }
     return '#007AFF';
+  };
+
+  const handleVideoAdReward = () => {
+    onRefresh(); // Refresh data after earning reward
   };
 
   const renderTransaction = ({ item }: { item: Transaction }) => (
@@ -104,7 +119,7 @@ export default function Wallet() {
           { backgroundColor: `${getTransactionColor(item.transaction_type, item.amount)}20` }
         ]}>
           <Ionicons
-            name={getTransactionIcon(item.transaction_type) as any}
+            name={getTransactionIcon(item.transaction_type, item.virtual_money_type) as any}
             size={20}
             color={getTransactionColor(item.transaction_type, item.amount)}
           />
@@ -112,6 +127,11 @@ export default function Wallet() {
         <View style={styles.transactionInfo}>
           <Text style={styles.transactionDescription}>{item.description}</Text>
           <Text style={styles.transactionDate}>{formatDate(item.created_at)}</Text>
+          {item.virtual_money_type && (
+            <Text style={styles.transactionType}>
+              {item.virtual_money_type.replace('_', ' ').toUpperCase()}
+            </Text>
+          )}
         </View>
         <View style={styles.transactionAmount}>
           <Text style={[
@@ -119,9 +139,6 @@ export default function Wallet() {
             { color: getTransactionColor(item.transaction_type, item.amount) }
           ]}>
             {item.amount >= 0 ? '+' : ''}{formatCurrency(item.amount)}
-          </Text>
-          <Text style={styles.transactionType}>
-            {item.transaction_type.replace('_', ' ').toUpperCase()}
           </Text>
         </View>
       </View>
@@ -136,6 +153,15 @@ export default function Wallet() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        {/* Header with Logo */}
+        <View style={styles.headerContainer}>
+          <Image 
+            source={require('../../assets/tradeict-logo-dark.png')} 
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+        </View>
+
         {/* Balance Overview */}
         <View style={styles.balanceSection}>
           <Text style={styles.sectionTitle}>Balance Overview</Text>
@@ -143,10 +169,10 @@ export default function Wallet() {
           <View style={styles.totalBalanceCard}>
             <View style={styles.totalBalanceHeader}>
               <Ionicons name="wallet" size={24} color="#007AFF" />
-              <Text style={styles.totalBalanceLabel}>Total Balance</Text>
+              <Text style={styles.totalBalanceLabel}>Total Portfolio</Text>
             </View>
             <Text style={styles.totalBalanceAmount}>
-              {formatCurrency((user?.virtual_balance || 0) + (user?.earnings_balance || 0))}
+              {formatCurrency(user?.total_balance || 0)}
             </Text>
           </View>
 
@@ -167,16 +193,70 @@ export default function Wallet() {
             <View style={styles.balanceCard}>
               <View style={styles.balanceCardHeader}>
                 <Ionicons name="trophy" size={20} color="#34C759" />
-                <Text style={styles.balanceCardTitle}>Earnings</Text>
+                <Text style={styles.balanceCardTitle}>Trading Earnings</Text>
               </View>
               <Text style={[styles.balanceCardAmount, { color: '#34C759' }]}>
                 {formatCurrency(user?.earnings_balance || 0)}
               </Text>
               <Text style={styles.balanceCardDescription}>
-                Profits from trading strategies
+                Available for coupons
               </Text>
             </View>
           </View>
+
+          <View style={styles.balanceBreakdown}>
+            <View style={styles.balanceCard}>
+              <View style={styles.balanceCardHeader}>
+                <Ionicons name="gift" size={20} color="#FF9500" />
+                <Text style={styles.balanceCardTitle}>Task Rewards</Text>
+              </View>
+              <Text style={[styles.balanceCardAmount, { color: '#FF9500' }]}>
+                {formatCurrency(user?.task_balance || 0)}
+              </Text>
+              <Text style={styles.balanceCardDescription}>
+                From daily login & ads
+              </Text>
+            </View>
+
+            <View style={styles.balanceCard}>
+              <View style={styles.balanceCardHeader}>
+                <Ionicons name="bar-chart" size={20} color="#FF3B30" />
+                <Text style={styles.balanceCardTitle}>Investment</Text>
+              </View>
+              <Text style={[styles.balanceCardAmount, { color: '#FF3B30' }]}>
+                {formatCurrency(user?.total_investment || 0)}
+              </Text>
+              <Text style={styles.balanceCardDescription}>
+                Currently invested
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Earn More Section */}
+        <View style={styles.earnMoreSection}>
+          <Text style={styles.sectionTitle}>Earn More Virtual Money</Text>
+          <VideoAdButton 
+            style={styles.videoAdButton}
+            onRewardEarned={handleVideoAdReward}
+          />
+        </View>
+
+        {/* Banner Ad */}
+        <View style={styles.adContainer}>
+          <BannerAd
+            unitId={TestIds.BANNER}
+            size={BannerAdSize.FULL_BANNER}
+            requestOptions={{
+              requestNonPersonalizedAdsOnly: true,
+            }}
+            onAdLoaded={() => {
+              console.log('Banner ad loaded');
+            }}
+            onAdFailedToLoad={(error) => {
+              console.error('Banner ad failed to load:', error);
+            }}
+          />
         </View>
 
         {/* Transaction History */}
@@ -218,8 +298,17 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
-  balanceSection: {
+  headerContainer: {
+    alignItems: 'center',
     paddingTop: 16,
+    paddingBottom: 8,
+  },
+  headerLogo: {
+    width: 120,
+    height: 40,
+  },
+  balanceSection: {
+    paddingTop: 8,
     paddingBottom: 24,
   },
   sectionTitle: {
@@ -250,13 +339,14 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   totalBalanceAmount: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#fff',
   },
   balanceBreakdown: {
     flexDirection: 'row',
     gap: 12,
+    marginBottom: 12,
   },
   balanceCard: {
     flex: 1,
@@ -275,20 +365,38 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   balanceCardTitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
     marginLeft: 8,
     fontWeight: '500',
   },
   balanceCardAmount: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#1a1a1a',
     marginBottom: 4,
   },
   balanceCardDescription: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#999',
+  },
+  earnMoreSection: {
+    paddingBottom: 24,
+  },
+  videoAdButton: {
+    marginTop: 8,
+  },
+  adContainer: {
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 8,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   transactionsSection: {
     paddingBottom: 32,
@@ -342,6 +450,12 @@ const styles = StyleSheet.create({
   transactionDate: {
     fontSize: 12,
     color: '#666',
+    marginBottom: 2,
+  },
+  transactionType: {
+    fontSize: 10,
+    color: '#999',
+    fontWeight: '500',
   },
   transactionAmount: {
     alignItems: 'flex-end',
@@ -349,12 +463,6 @@ const styles = StyleSheet.create({
   transactionAmountText: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 2,
-  },
-  transactionType: {
-    fontSize: 10,
-    color: '#999',
-    fontWeight: '500',
   },
   emptyState: {
     alignItems: 'center',
