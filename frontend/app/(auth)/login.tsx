@@ -9,8 +9,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Linking,
   ActivityIndicator,
+  Linking,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
@@ -59,7 +60,14 @@ export default function Login() {
 
     setLoading(true);
     try {
-      await login(email.trim().toLowerCase(), password);
+      const result = await login(email.trim().toLowerCase(), password);
+      if (result.dailyBonus && result.dailyBonus > 0) {
+        Alert.alert(
+          'Welcome Back!',
+          `You earned $${result.dailyBonus} daily login bonus! 🎉`,
+          [{ text: 'Awesome!', style: 'default' }]
+        );
+      }
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     } finally {
@@ -70,7 +78,7 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
-      const redirectUrl = 'exp://localhost:3000/(tabs)/home'; // Your app's deep link
+      const redirectUrl = 'exp://localhost:3000/(tabs)/home';
       const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
       
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
@@ -90,7 +98,15 @@ export default function Login() {
 
   const handleGoogleLogin = async (sessionId: string) => {
     try {
-      await loginWithGoogle(sessionId);
+      const result = await loginWithGoogle(sessionId);
+      if (result.needsPhoneNumber) {
+        Alert.alert(
+          'Complete Registration',
+          'Please provide your phone number to complete the setup.',
+          [{ text: 'OK', style: 'default' }]
+        );
+        // The app will navigate to phone collection screen automatically
+      }
     } catch (error: any) {
       Alert.alert('Google Login Failed', error.message);
     }
@@ -104,9 +120,13 @@ export default function Login() {
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
-            <Ionicons name="trending-up" size={64} color="#007AFF" />
-            <Text style={styles.title}>Trading Simulator</Text>
-            <Text style={styles.subtitle}>Welcome back! Sign in to continue</Text>
+            <Image 
+              source={require('../../assets/tradeict-logo-dark.png')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.subtitle}>Sign in to continue your trading journey</Text>
           </View>
 
           <View style={styles.form}>
@@ -208,14 +228,18 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: 40,
     paddingBottom: 40,
+  },
+  logo: {
+    width: 120,
+    height: 40,
+    marginBottom: 24,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1a1a1a',
-    marginTop: 16,
     marginBottom: 8,
   },
   subtitle: {

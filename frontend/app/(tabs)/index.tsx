@@ -6,12 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
+  Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -70,18 +73,19 @@ export default function Home() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Hello, {user?.name}!</Text>
-            <Text style={styles.subGreeting}>Welcome to your trading dashboard</Text>
-          </View>
-          <View style={styles.balanceContainer}>
-            <Text style={styles.balanceLabel}>Total Balance</Text>
-            <Text style={styles.balanceAmount}>
-              {formatCurrency((user?.virtual_balance || 0) + (user?.earnings_balance || 0))}
-            </Text>
-          </View>
+        {/* Header with Logo */}
+        <View style={styles.headerContainer}>
+          <Image 
+            source={require('../../assets/tradeict-logo-dark.png')} 
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+        </View>
+
+        {/* Greeting */}
+        <View style={styles.greetingSection}>
+          <Text style={styles.greeting}>Hello, {user?.name}!</Text>
+          <Text style={styles.subGreeting}>Welcome to your trading dashboard</Text>
         </View>
 
         {/* Balance Cards */}
@@ -90,13 +94,54 @@ export default function Home() {
             <Ionicons name="wallet-outline" size={24} color="#007AFF" />
             <Text style={styles.cardLabel}>Virtual Money</Text>
             <Text style={styles.cardAmount}>{formatCurrency(user?.virtual_balance || 0)}</Text>
+            <Text style={styles.cardDescription}>Available for investment</Text>
           </View>
           
           <View style={[styles.balanceCard, styles.earningsCard]}>
             <Ionicons name="trending-up" size={24} color="#34C759" />
-            <Text style={styles.cardLabel}>Earnings</Text>
+            <Text style={styles.cardLabel}>Trading Earnings</Text>
             <Text style={[styles.cardAmount, { color: '#34C759' }]}>
               {formatCurrency(user?.earnings_balance || 0)}
+            </Text>
+            <Text style={styles.cardDescription}>Available for coupons</Text>
+          </View>
+        </View>
+
+        <View style={styles.balanceCards}>
+          <View style={[styles.balanceCard, styles.taskCard]}>
+            <Ionicons name="gift-outline" size={24} color="#FF9500" />
+            <Text style={styles.cardLabel}>Task Rewards</Text>
+            <Text style={[styles.cardAmount, { color: '#FF9500' }]}>
+              {formatCurrency(user?.task_balance || 0)}
+            </Text>
+            <Text style={styles.cardDescription}>From daily login & ads</Text>
+          </View>
+          
+          <View style={[styles.balanceCard, styles.investmentCard]}>
+            <Ionicons name="bar-chart-outline" size={24} color="#FF3B30" />
+            <Text style={styles.cardLabel}>Investment</Text>
+            <Text style={[styles.cardAmount, { color: '#FF3B30' }]}>
+              {formatCurrency(user?.total_investment || 0)}
+            </Text>
+            <Text style={styles.cardDescription}>Currently invested</Text>
+          </View>
+        </View>
+
+        {/* Total Balance Summary */}
+        <View style={styles.totalBalanceCard}>
+          <View style={styles.totalBalanceHeader}>
+            <Ionicons name="wallet" size={24} color="#007AFF" />
+            <Text style={styles.totalBalanceTitle}>Total Portfolio Value</Text>
+          </View>
+          <Text style={styles.totalBalanceAmount}>
+            {formatCurrency((user?.total_balance || 0))}
+          </Text>
+          <View style={styles.balanceBreakdown}>
+            <Text style={styles.balanceBreakdownText}>
+              Available for Investment: {formatCurrency((user?.available_for_investment || 0))}
+            </Text>
+            <Text style={styles.balanceBreakdownText}>
+              Available for Coupons: {formatCurrency((user?.available_for_coupons || 0))}
             </Text>
           </View>
         </View>
@@ -104,7 +149,7 @@ export default function Home() {
         {/* Portfolio Summary */}
         {totalInvested > 0 && (
           <View style={styles.portfolioCard}>
-            <Text style={styles.portfolioTitle}>Portfolio Summary</Text>
+            <Text style={styles.portfolioTitle}>Portfolio Performance</Text>
             <View style={styles.portfolioStats}>
               <View style={styles.portfolioStat}>
                 <Text style={styles.portfolioStatLabel}>Total Invested</Text>
@@ -131,6 +176,23 @@ export default function Home() {
             </View>
           </View>
         )}
+
+        {/* Banner Ad */}
+        <View style={styles.adContainer}>
+          <BannerAd
+            unitId={TestIds.BANNER}
+            size={BannerAdSize.FULL_BANNER}
+            requestOptions={{
+              requestNonPersonalizedAdsOnly: true,
+            }}
+            onAdLoaded={() => {
+              console.log('Banner ad loaded');
+            }}
+            onAdFailedToLoad={(error) => {
+              console.error('Banner ad failed to load:', error);
+            }}
+          />
+        </View>
 
         {/* Active Strategies */}
         <View style={styles.strategiesSection}>
@@ -208,9 +270,17 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
-  header: {
+  headerContainer: {
+    alignItems: 'center',
     paddingTop: 16,
-    paddingBottom: 24,
+    paddingBottom: 8,
+  },
+  headerLogo: {
+    width: 120,
+    height: 40,
+  },
+  greetingSection: {
+    paddingVertical: 16,
   },
   greeting: {
     fontSize: 28,
@@ -221,31 +291,17 @@ const styles = StyleSheet.create({
   subGreeting: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 16,
-  },
-  balanceContainer: {
-    alignItems: 'center',
-  },
-  balanceLabel: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 4,
-  },
-  balanceAmount: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#007AFF',
   },
   balanceCards: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 12,
   },
   balanceCard: {
     flex: 1,
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -261,22 +317,71 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#34C759',
   },
+  taskCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF9500',
+  },
+  investmentCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF3B30',
+  },
   cardLabel: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
     marginTop: 8,
     marginBottom: 4,
+    textAlign: 'center',
   },
   cardAmount: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  cardDescription: {
+    fontSize: 10,
+    color: '#999',
+    textAlign: 'center',
+  },
+  totalBalanceCard: {
+    backgroundColor: '#007AFF',
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 16,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  totalBalanceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  totalBalanceTitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginLeft: 8,
+  },
+  totalBalanceAmount: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  balanceBreakdown: {
+    gap: 4,
+  },
+  balanceBreakdownText: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   portfolioCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
-    marginBottom: 24,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -305,6 +410,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
+  },
+  adContainer: {
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 8,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   strategiesSection: {
     marginBottom: 32,
