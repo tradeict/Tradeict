@@ -217,7 +217,7 @@ async def init_database():
     print("Admin: admin@tradingsim.com / admin123")
     print("Test User: test@example.com / test123")
     
-    await client.close()
+    client.close()
 
 if __name__ == "__main__":
     asyncio.run(init_database())
