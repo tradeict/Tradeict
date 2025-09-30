@@ -9,32 +9,44 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  phone_number?: string;
   role: string;
   virtual_balance: number;
   earnings_balance: number;
+  task_balance: number;
+  total_investment: number;
+  available_for_investment: number;
+  available_for_coupons: number;
+  total_balance: number;
   profile_picture?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, name: string, password: string) => Promise<void>;
-  loginWithGoogle: (sessionId: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ dailyBonus?: number }>;
+  register: (email: string, name: string, phone: string, password: string, verificationToken: string) => Promise<void>;
+  loginWithGoogle: (sessionId: string) => Promise<{ needsPhoneNumber?: boolean }>;
   logout: () => Promise<void>;
   loading: boolean;
   refreshUser: () => Promise<void>;
+  sendOTP: (email: string, phone?: string) => Promise<void>;
+  verifyOTP: (email: string, otp: string) => Promise<string>;
+  updatePhoneNumber: (phoneNumber: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
-  login: async () => {},
+  login: async () => ({}),
   register: async () => {},
-  loginWithGoogle: async () => {},
+  loginWithGoogle: async () => ({}),
   logout: async () => {},
   loading: true,
   refreshUser: async () => {},
+  sendOTP: async () => {},
+  verifyOTP: async () => '',
+  updatePhoneNumber: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -64,11 +76,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Navigation logic
   useEffect(() => {
     const inAuthGroup = segments[0] === '(auth)';
+    const inLanding = segments[0] === 'landing';
     
     if (!loading) {
-      if (!user && !inAuthGroup) {
-        router.replace('/(auth)/login');
-      } else if (user && inAuthGroup) {
+      if (!user && !inAuthGroup && !inLanding) {
+        router.replace('/landing');
+      } else if (user && (inAuthGroup || inLanding)) {
         router.replace('/(tabs)');
       }
     }
@@ -88,11 +101,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setToken(savedToken);
         setUser(JSON.parse(savedUser));
         axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+        
+        // Refresh user data to get latest balances
+        await refreshUserSilently(savedToken);
       }
     } catch (error) {
       console.error('Error checking auth state:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const refreshUserSilently = async (authToken?: string) => {
+    try {
+      const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+      const response = await axios.get(`${API_URL}/api/wallet`, { headers });
+      
+      if (response.data) {
+        const updatedUser = {
+          ...user!,
+          ...response.data,
+        };
+        setUser(updatedUser);
+        await AsyncStorage.setItem('user_data', JSON.stringify(updatedUser));
+      }
+    } catch (error) {
+      console.error('Error refreshing user silently:', error);
     }
   };
 
@@ -103,14 +137,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await axios.get(`${API_URL}/api/wallet`);
       const updatedUser = {
         ...user!,
-        virtual_balance: response.data.virtual_balance,
-        earnings_balance: response.data.earnings_balance,
+        ...response.data,
       };
       
       setUser(updatedUser);
       await AsyncStorage.setItem('user_data', JSON.stringify(updatedUser));
     } catch (error) {
       console.error('Error refreshing user:', error);
+    }
+  };
+
+  const sendOTP = async (email: string, phone?: string) => {
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/send-otp`, {
+        email,
+        phone_number: phone,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || 'Failed to send OTP');
+    }
+  };
+
+  const verifyOTP = async (email: string, otp: string) => {
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/verify-otp`, {
+        email,
+        otp,
+      });
+      return response.data.verification_token;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || 'OTP verification failed');
     }
   };
 
@@ -121,7 +178,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         password,
       });
 
-      const { access_token, user: userData } = response.data;
+      const { access_token, user: userData, daily_bonus } = response.data;
       
       await AsyncStorage.setItem('auth_token', access_token);
       await AsyncStorage.setItem('user_data', JSON.stringify(userData));
@@ -130,17 +187,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(userData);
       
       axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+      
+      return { dailyBonus: daily_bonus };
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Login failed');
     }
   };
 
-  const register = async (email: string, name: string, password: string) => {
+  const register = async (email: string, name: string, phone: string, password: string, verificationToken: string) => {
     try {
-      const response = await axios.post(`${API_URL}/api/auth/register`, {
-        email,
-        name,
-        password,
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('name', name);
+      formData.append('phone_number', phone);
+      formData.append('password', password);
+      formData.append('verification_token', verificationToken);
+
+      const response = await axios.post(`${API_URL}/api/auth/register`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       const { access_token, user: userData } = response.data;
@@ -165,17 +231,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
         },
       });
 
-      const { user: userData, session_token } = response.data;
+      const { user: userData, session_token, needs_phone_number } = response.data;
       
-      // For simplicity, we'll create a JWT token for consistency
-      // In production, you might want to handle session tokens differently
       await AsyncStorage.setItem('auth_token', session_token);
       await AsyncStorage.setItem('user_data', JSON.stringify(userData));
       
       setToken(session_token);
       setUser(userData);
+      
+      return { needsPhoneNumber: needs_phone_number };
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Google login failed');
+    }
+  };
+
+  const updatePhoneNumber = async (phoneNumber: string) => {
+    try {
+      const formData = new FormData();
+      formData.append('phone_number', phoneNumber);
+      
+      await axios.post(`${API_URL}/api/auth/update-phone`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      // Update local user data
+      if (user) {
+        const updatedUser = { ...user, phone_number: phoneNumber };
+        setUser(updatedUser);
+        await AsyncStorage.setItem('user_data', JSON.stringify(updatedUser));
+      }
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || 'Failed to update phone number');
     }
   };
 
@@ -195,7 +283,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       delete axios.defaults.headers.common['Authorization'];
       
-      router.replace('/(auth)/login');
+      router.replace('/landing');
     }
   };
 
@@ -210,6 +298,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         logout,
         loading,
         refreshUser,
+        sendOTP,
+        verifyOTP,
+        updatePhoneNumber,
       }}
     >
       {children}
