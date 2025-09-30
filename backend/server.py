@@ -534,13 +534,13 @@ async def get_subscription_requests(current_user: User = Depends(get_current_use
     if current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    requests = await db.subscription_requests.find().sort("created_at", -1).to_list(1000)
+    requests = await db.subscription_requests.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     
     # Populate user and strategy details
     result = []
     for req in requests:
-        user = await db.users.find_one({"id": req["user_id"]})
-        strategy = await db.strategies.find_one({"id": req["strategy_id"]})
+        user = await db.users.find_one({"id": req["user_id"]}, {"_id": 0})
+        strategy = await db.strategies.find_one({"id": req["strategy_id"]}, {"_id": 0})
         
         result.append({
             **req,
