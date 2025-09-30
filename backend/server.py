@@ -474,8 +474,16 @@ async def redeem_coupon(coupon_id: str = Form(...), current_user: User = Depends
         raise HTTPException(status_code=400, detail="Insufficient earnings balance")
     
     # Check if coupon is expired
-    if coupon.get("expiry_date") and coupon["expiry_date"] < datetime.now(timezone.utc):
-        raise HTTPException(status_code=400, detail="Coupon has expired")
+    if coupon.get("expiry_date"):
+        expiry_date = coupon["expiry_date"]
+        # Handle both string and datetime objects
+        if isinstance(expiry_date, str):
+            expiry_date = datetime.fromisoformat(expiry_date.replace('Z', '+00:00'))
+        # Ensure timezone awareness
+        if expiry_date.tzinfo is None:
+            expiry_date = expiry_date.replace(tzinfo=timezone.utc)
+        if expiry_date < datetime.now(timezone.utc):
+            raise HTTPException(status_code=400, detail="Coupon has expired")
     
     # Create redemption record
     redemption = CouponRedemption(
