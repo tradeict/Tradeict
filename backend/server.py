@@ -466,7 +466,7 @@ async def get_coupons(current_user: User = Depends(get_current_user)):
 
 @api_router.post("/coupons/redeem")
 async def redeem_coupon(coupon_id: str = Form(...), current_user: User = Depends(get_current_user)):
-    coupon = await db.coupons.find_one({"id": coupon_id, "is_active": True})
+    coupon = await db.coupons.find_one({"id": coupon_id, "is_active": True}, {"_id": 0})
     if not coupon:
         raise HTTPException(status_code=404, detail="Coupon not found")
     
