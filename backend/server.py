@@ -419,12 +419,18 @@ async def invest_in_strategy(strategy_id: str = Form(...), amount: float = Form(
 
 @api_router.get("/user-strategies")
 async def get_user_strategies(current_user: User = Depends(get_current_user)):
-    user_strategies = await db.user_strategies.find({"user_id": current_user.id, "is_active": True}).to_list(1000)
+    user_strategies = await db.user_strategies.find(
+        {"user_id": current_user.id, "is_active": True},
+        {"_id": 0}  # Exclude MongoDB _id field
+    ).to_list(1000)
     
     # Populate strategy details
     result = []
     for us in user_strategies:
-        strategy = await db.strategies.find_one({"id": us["strategy_id"]})
+        strategy = await db.strategies.find_one(
+            {"id": us["strategy_id"]},
+            {"_id": 0}  # Exclude MongoDB _id field
+        )
         if strategy:
             result.append({
                 **us,
