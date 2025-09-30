@@ -452,7 +452,10 @@ async def get_wallet(current_user: User = Depends(get_current_user)):
 
 @api_router.get("/transactions")
 async def get_transactions(current_user: User = Depends(get_current_user)):
-    transactions = await db.transactions.find({"user_id": current_user.id}).sort("created_at", -1).to_list(1000)
+    transactions = await db.transactions.find(
+        {"user_id": current_user.id},
+        {"_id": 0}  # Exclude MongoDB _id field
+    ).sort("created_at", -1).to_list(1000)
     return transactions
 
 # Coupon Routes
