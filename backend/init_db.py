@@ -22,25 +22,51 @@ db = client[os.environ['DB_NAME']]
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 async def init_database():
-    print("Initializing database with sample data...")
+    print("Initializing Tradeict database with sample data...")
     
-    # Create admin user
+    # Create admin user (original)
     admin_user = {
         "id": str(uuid.uuid4()),
         "email": "admin@tradingsim.com",
         "name": "Admin User",
+        "phone_number": "+1234567890",
         "password_hash": pwd_context.hash("admin123"),
         "role": "admin",
         "virtual_balance": 50000.0,
         "earnings_balance": 5000.0,
+        "task_balance": 0.0,
+        "total_investment": 0.0,
         "google_id": None,
         "profile_picture": None,
         "is_active": True,
+        "email_verified": True,
+        "last_daily_login": None,
         "created_at": datetime.now(timezone.utc),
         "last_login": None
     }
     
-    # Check if admin already exists
+    # Create specific admin user requested by user
+    bimal_admin_user = {
+        "id": str(uuid.uuid4()),
+        "email": "bimal.vishvakarma@gmail.com",
+        "name": "Bimal Vishvakarma",
+        "phone_number": "+1234567890",
+        "password_hash": pwd_context.hash("Admin@123"),
+        "role": "admin",
+        "virtual_balance": 100000.0,
+        "earnings_balance": 10000.0,
+        "task_balance": 0.0,
+        "total_investment": 0.0,
+        "google_id": None,
+        "profile_picture": None,
+        "is_active": True,
+        "email_verified": True,
+        "last_daily_login": None,
+        "created_at": datetime.now(timezone.utc),
+        "last_login": None
+    }
+    
+    # Check if admin users already exist
     existing_admin = await db.users.find_one({"email": "admin@tradingsim.com"})
     if not existing_admin:
         await db.users.insert_one(admin_user)
@@ -48,18 +74,30 @@ async def init_database():
     else:
         print("✓ Admin user already exists")
     
+    existing_bimal = await db.users.find_one({"email": "bimal.vishvakarma@gmail.com"})
+    if not existing_bimal:
+        await db.users.insert_one(bimal_admin_user)
+        print("✓ Created Bimal admin user (bimal.vishvakarma@gmail.com / Admin@123)")
+    else:
+        print("✓ Bimal admin user already exists")
+    
     # Create test user
     test_user = {
         "id": str(uuid.uuid4()),
         "email": "test@example.com",
         "name": "Test User",
+        "phone_number": "+9876543210",
         "password_hash": pwd_context.hash("test123"),
         "role": "user",
         "virtual_balance": 10000.0,
         "earnings_balance": 250.0,
+        "task_balance": 500.0,
+        "total_investment": 2000.0,
         "google_id": None,
         "profile_picture": None,
         "is_active": True,
+        "email_verified": True,
+        "last_daily_login": None,
         "created_at": datetime.now(timezone.utc),
         "last_login": None
     }
@@ -212,10 +250,14 @@ async def init_database():
     else:
         print("✓ Coupons already exist")
     
-    print("\nDatabase initialization complete!")
+    print("\nTradeict Database initialization complete!")
     print("\nLogin Credentials:")
-    print("Admin: admin@tradingsim.com / admin123")
+    print("Original Admin: admin@tradingsim.com / admin123")
+    print("Bimal Admin: bimal.vishvakarma@gmail.com / Admin@123")
     print("Test User: test@example.com / test123")
+    
+    print(f"\nAdmin Dashboard URL: https://profit-play-12.preview.emergentagent.com/admin")
+    print("Note: Admin dashboard interface will be created in the next phase")
     
     client.close()
 
