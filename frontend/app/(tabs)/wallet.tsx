@@ -235,30 +235,19 @@ export default function Wallet() {
         {/* Earn More Section */}
         <View style={styles.earnMoreSection}>
           <Text style={styles.sectionTitle}>Earn More Virtual Money</Text>
-          <VideoAdButton 
-            style={styles.videoAdButton}
-            onRewardEarned={handleVideoAdReward}
-          />
+          <View style={styles.placeholderAdButton}>
+            <Ionicons name="play-circle" size={24} color="#34C759" />
+            <Text style={styles.placeholderAdText}>Watch Video - Earn $1,000</Text>
+            <Text style={styles.placeholderSubtext}>
+              {Platform.OS === 'web' ? 'Available on mobile app' : 'Video ads coming soon!'}
+            </Text>
+          </View>
         </View>
 
-        {/* Banner Ad */}
-        {Platform.OS !== 'web' && BannerAd && (
-          <View style={styles.adContainer}>
-            <BannerAd
-              unitId={TestIds?.BANNER || 'ca-app-pub-3940256099942544/6300978111'}
-              size={BannerAdSize?.FULL_BANNER || 'FULL_BANNER'}
-              requestOptions={{
-                requestNonPersonalizedAdsOnly: true,
-              }}
-              onAdLoaded={() => {
-                console.log('Banner ad loaded');
-              }}
-              onAdFailedToLoad={(error) => {
-                console.error('Banner ad failed to load:', error);
-              }}
-            />
-          </View>
-        )}
+        {/* Banner Ad Placeholder */}
+        <View style={styles.adContainer}>
+          <Text style={styles.adPlaceholder}>Advertisement Space</Text>
+        </View>
 
         {/* Transaction History */}
         <View style={styles.transactionsSection}>
