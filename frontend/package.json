@@ -42,7 +42,6 @@
     "react-native": "0.79.5",
     "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "~2.24.0",
-    "react-native-google-mobile-ads": "^15.7.0",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-keychain": "^10.0.0",
     "react-native-otp-textinput": "^1.1.7",
