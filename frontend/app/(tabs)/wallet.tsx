@@ -259,21 +259,23 @@ export default function Wallet() {
         </View>
 
         {/* Banner Ad */}
-        <View style={styles.adContainer}>
-          <BannerAd
-            unitId={TestIds.BANNER}
-            size={BannerAdSize.FULL_BANNER}
-            requestOptions={{
-              requestNonPersonalizedAdsOnly: true,
-            }}
-            onAdLoaded={() => {
-              console.log('Banner ad loaded');
-            }}
-            onAdFailedToLoad={(error) => {
-              console.error('Banner ad failed to load:', error);
-            }}
-          />
-        </View>
+        {Platform.OS !== 'web' && BannerAd && (
+          <View style={styles.adContainer}>
+            <BannerAd
+              unitId={TestIds?.BANNER || 'ca-app-pub-3940256099942544/6300978111'}
+              size={BannerAdSize?.FULL_BANNER || 'FULL_BANNER'}
+              requestOptions={{
+                requestNonPersonalizedAdsOnly: true,
+              }}
+              onAdLoaded={() => {
+                console.log('Banner ad loaded');
+              }}
+              onAdFailedToLoad={(error) => {
+                console.error('Banner ad failed to load:', error);
+              }}
+            />
+          </View>
+        )}
 
         {/* Transaction History */}
         <View style={styles.transactionsSection}>
