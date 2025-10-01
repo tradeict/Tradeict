@@ -494,10 +494,10 @@ async def login(user_data: UserLogin):
             "email": updated_user["email"],
             "name": updated_user["name"],
             "role": updated_user["role"],
-            "virtual_balance": updated_user["virtual_balance"],
-            "earnings_balance": updated_user["earnings_balance"],
-            "task_balance": updated_user["task_balance"],
-            "total_investment": updated_user["total_investment"]
+            "virtual_balance": updated_user.get("virtual_balance", 10000.0),
+            "earnings_balance": updated_user.get("earnings_balance", 0.0),
+            "task_balance": updated_user.get("task_balance", 0.0),
+            "total_investment": updated_user.get("total_investment", 0.0)
         }
     }
 
