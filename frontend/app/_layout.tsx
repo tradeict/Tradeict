@@ -5,7 +5,7 @@ import AdMobProvider from '../components/AdMobManager';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import mobileAds from 'react-native-google-mobile-ads';
+import { Platform } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -15,16 +15,22 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    // Initialize AdMob
-    mobileAds()
-      .initialize()
-      .then(adapterStatuses => {
-        console.log('AdMob initialized successfully');
-        console.log('Adapter statuses:', adapterStatuses);
-      })
-      .catch(error => {
-        console.error('Failed to initialize AdMob:', error);
+    // Initialize AdMob only on mobile platforms
+    if (Platform.OS !== 'web') {
+      import('react-native-google-mobile-ads').then((mobileAds) => {
+        mobileAds.default()
+          .initialize()
+          .then(adapterStatuses => {
+            console.log('AdMob initialized successfully');
+            console.log('Adapter statuses:', adapterStatuses);
+          })
+          .catch(error => {
+            console.error('Failed to initialize AdMob:', error);
+          });
+      }).catch(error => {
+        console.log('AdMob not available on this platform:', error);
       });
+    }
 
     if (loaded) {
       SplashScreen.hideAsync();
@@ -35,19 +41,27 @@ export default function RootLayout() {
     return null;
   }
 
+  const AppContent = () => (
+    <AuthProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="landing" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="phone-collection" options={{ headerShown: false }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+      </Stack>
+    </AuthProvider>
+  );
+
   return (
     <SafeAreaProvider>
-      <AuthProvider>
+      {Platform.OS !== 'web' ? (
         <AdMobProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="landing" options={{ headerShown: false }} />
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="phone-collection" options={{ headerShown: false }} />
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-          </Stack>
+          <AppContent />
         </AdMobProvider>
-      </AuthProvider>
+      ) : (
+        <AppContent />
+      )}
     </SafeAreaProvider>
   );
 }
