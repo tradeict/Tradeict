@@ -4,7 +4,6 @@ import { AuthProvider } from '../context/AuthContext';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Platform } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -14,27 +13,6 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    // Initialize AdMob only on mobile platforms
-    if (Platform.OS !== 'web') {
-      try {
-        import('react-native-google-mobile-ads').then((mobileAds) => {
-          mobileAds.default()
-            .initialize()
-            .then(adapterStatuses => {
-              console.log('AdMob initialized successfully');
-              console.log('Adapter statuses:', adapterStatuses);
-            })
-            .catch(error => {
-              console.error('Failed to initialize AdMob:', error);
-            });
-        }).catch(error => {
-          console.log('AdMob not available on this platform:', error);
-        });
-      } catch (error) {
-        console.log('AdMob initialization error:', error);
-      }
-    }
-
     if (loaded) {
       SplashScreen.hideAsync();
     }
@@ -52,6 +30,8 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="phone-collection" options={{ headerShown: false }} />
+          <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
+          <Stack.Screen name="admin" options={{ headerShown: false }} />
           <Stack.Screen name="index" options={{ headerShown: false }} />
         </Stack>
       </AuthProvider>
