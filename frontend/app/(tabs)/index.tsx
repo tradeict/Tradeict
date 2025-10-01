@@ -8,13 +8,30 @@ import {
   RefreshControl,
   Image,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import VideoAdButton from '../../components/VideoAdButton';
 import axios from 'axios';
 import Constants from 'expo-constants';
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+
+// Dynamic import for AdMob (mobile-only)
+let BannerAd: any = null;
+let BannerAdSize: any = null;
+let TestIds: any = null;
+
+if (Platform.OS !== 'web') {
+  try {
+    const AdMob = require('react-native-google-mobile-ads');
+    BannerAd = AdMob.BannerAd;
+    BannerAdSize = AdMob.BannerAdSize;
+    TestIds = AdMob.TestIds;
+  } catch (error) {
+    console.log('AdMob not available:', error);
+  }
+}
 
 const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
