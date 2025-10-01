@@ -65,10 +65,11 @@ export default function Landing() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Ionicons name="trending-up" size={48} color="#007AFF" />
-            <Text style={styles.logoText}>Tradeict</Text>
-          </View>
+          <Image 
+            source={require('../assets/tradeict-logo-dark.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.tagline}>Master Trading with Virtual Money</Text>
         </View>
 
@@ -80,6 +81,25 @@ export default function Landing() {
           <Text style={styles.heroSubtitle}>
             Learn market-proven strategies with virtual money, then transition to real trading with confidence
           </Text>
+        </View>
+
+        {/* CTA Buttons */}
+        <View style={styles.ctaButtons}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => router.push('/(auth)/register')}
+          >
+            <Text style={styles.primaryButtonText}>Get Started Free</Text>
+            <Ionicons name="arrow-forward" size={20} color="#fff" style={styles.buttonIcon} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => router.push('/(auth)/login')}
+          >
+            <Text style={styles.secondaryButtonText}>Login</Text>
+            <Ionicons name="log-in" size={20} color="#007AFF" style={styles.buttonIcon} />
+          </TouchableOpacity>
         </View>
 
         {/* Features Section */}
@@ -108,8 +128,34 @@ export default function Landing() {
 
         {/* How It Works */}
         <View style={styles.howItWorksSection}>
-          <Text style={styles.sectionTitle}>How It Works</Text>
+          <Text style={styles.sectionTitle}>How Tradeict Helps You</Text>
           
+          <View style={styles.helpSection}>
+            <View style={styles.helpCard}>
+              <Ionicons name="school" size={32} color="#007AFF" />
+              <Text style={styles.helpTitle}>Learn Market Analysis</Text>
+              <Text style={styles.helpDescription}>
+                Understand how proven strategies work in different market conditions without any risk
+              </Text>
+            </View>
+            
+            <View style={styles.helpCard}>
+              <Ionicons name="analytics" size={32} color="#34C759" />
+              <Text style={styles.helpTitle}>Test Strategy Performance</Text>
+              <Text style={styles.helpDescription}>
+                Analyze historical performance and see real results of different trading approaches
+              </Text>
+            </View>
+            
+            <View style={styles.helpCard}>
+              <Ionicons name="rocket" size={32} color="#FF9500" />
+              <Text style={styles.helpTitle}>Prepare for Real Trading</Text>
+              <Text style={styles.helpDescription}>
+                Build confidence and experience before investing real money or using automated bots
+              </Text>
+            </View>
+          </View>
+
           <View style={styles.stepContainer}>
             <View style={styles.step}>
               <View style={[styles.stepNumber, { backgroundColor: '#007AFF' }]}>
@@ -166,27 +212,22 @@ export default function Landing() {
           </View>
         </View>
 
-        {/* Call to Action */}
-        <View style={styles.ctaSection}>
-          <Text style={styles.ctaTitle}>Ready to Start Trading?</Text>
-          <Text style={styles.ctaSubtitle}>
-            Join thousands of users who are mastering trading strategies with Tradeict
-          </Text>
-          
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() => router.push('/(auth)/register')}
-          >
-            <Text style={styles.primaryButtonText}>Get Started Free</Text>
-            <Ionicons name="arrow-forward" size={20} color="#fff" style={{ marginLeft: 8 }} />
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => router.push('/(auth)/login')}
-          >
-            <Text style={styles.secondaryButtonText}>Already have an account? Sign In</Text>
-          </TouchableOpacity>
+        {/* Final Call to Action */}
+        <View style={styles.finalCtaSection}>
+          <View style={styles.ctaCard}>
+            <Text style={styles.finalCtaTitle}>Ready to Master Trading?</Text>
+            <Text style={styles.finalCtaSubtitle}>
+              Join thousands of users learning proven trading strategies
+            </Text>
+            
+            <TouchableOpacity
+              style={styles.finalCtaButton}
+              onPress={() => router.push('/(auth)/register')}
+            >
+              <Text style={styles.finalCtaButtonText}>Start Your Journey</Text>
+              <Ionicons name="trending-up" size={20} color="#fff" style={styles.buttonIcon} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Footer */}
@@ -213,16 +254,10 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 10,
   },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  logoText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#007AFF',
-    marginLeft: 12,
+  logo: {
+    width: 150,
+    height: 50,
+    marginBottom: 12,
   },
   tagline: {
     fontSize: 16,
@@ -248,6 +283,54 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: 20,
+  },
+  ctaButtons: {
+    paddingHorizontal: 24,
+    marginBottom: 40,
+    gap: 12,
+  },
+  primaryButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  secondaryButtonText: {
+    color: '#007AFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  buttonIcon: {
+    marginLeft: 8,
   },
   featuresSection: {
     paddingHorizontal: 24,
@@ -303,6 +386,35 @@ const styles = StyleSheet.create({
   howItWorksSection: {
     paddingHorizontal: 24,
     paddingBottom: 32,
+  },
+  helpSection: {
+    marginBottom: 32,
+  },
+  helpCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  helpTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginTop: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  helpDescription: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   stepContainer: {
     gap: 24,
@@ -362,53 +474,47 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontWeight: '500',
   },
-  ctaSection: {
+  finalCtaSection: {
     paddingHorizontal: 24,
-    paddingVertical: 32,
-    alignItems: 'center',
+    paddingBottom: 32,
   },
-  ctaTitle: {
-    fontSize: 26,
+  ctaCard: {
+    backgroundColor: '#007AFF',
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  finalCtaTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#fff',
     marginBottom: 12,
     textAlign: 'center',
   },
-  ctaSubtitle: {
+  finalCtaSubtitle: {
     fontSize: 16,
-    color: '#666',
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 24,
-    paddingHorizontal: 20,
+    marginBottom: 24,
+    lineHeight: 22,
   },
-  primaryButton: {
-    backgroundColor: '#007AFF',
+  finalCtaButton: {
+    backgroundColor: '#fff',
     borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  primaryButtonText: {
-    color: '#fff',
+  finalCtaButtonText: {
+    color: '#007AFF',
     fontSize: 18,
     fontWeight: '600',
-  },
-  secondaryButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  secondaryButtonText: {
-    color: '#007AFF',
-    fontSize: 16,
-    fontWeight: '500',
   },
   footer: {
     paddingHorizontal: 24,
