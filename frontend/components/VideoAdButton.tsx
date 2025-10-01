@@ -4,11 +4,10 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   Alert,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAdMob } from './AdMobManager';
 
 interface VideoAdButtonProps {
   style?: any;
@@ -16,16 +15,17 @@ interface VideoAdButtonProps {
 }
 
 export default function VideoAdButton({ style, onRewardEarned }: VideoAdButtonProps) {
-  const { showRewardedVideo, isAdLoaded, isLoading } = useAdMob();
-
   const handleWatchAd = async () => {
-    try {
-      await showRewardedVideo();
-      onRewardEarned?.();
-    } catch (error: any) {
+    if (Platform.OS === 'web') {
       Alert.alert(
-        'Ad Not Ready',
-        'Please wait for the ad to load and try again.',
+        'Video Ads',
+        'Video ads are available on the mobile app. Download the app to watch ads and earn virtual money!',
+        [{ text: 'OK' }]
+      );
+    } else {
+      Alert.alert(
+        'Coming Soon!',
+        'Video ads will be available soon. Stay tuned for updates!',
         [{ text: 'OK' }]
       );
     }
@@ -33,20 +33,13 @@ export default function VideoAdButton({ style, onRewardEarned }: VideoAdButtonPr
 
   return (
     <TouchableOpacity
-      style={[styles.container, style, (!isAdLoaded || isLoading) && styles.disabled]}
+      style={[styles.container, style]}
       onPress={handleWatchAd}
-      disabled={!isAdLoaded || isLoading}
     >
       <View style={styles.content}>
-        {isLoading ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Ionicons name="play-circle" size={24} color="#fff" />
-        )}
+        <Ionicons name="play-circle" size={24} color="#fff" />
         <View style={styles.textContainer}>
-          <Text style={styles.title}>
-            {isLoading ? 'Loading Ad...' : 'Watch Video'}
-          </Text>
+          <Text style={styles.title}>Watch Video</Text>
           <Text style={styles.subtitle}>Earn $1,000</Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.8)" />
@@ -65,11 +58,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
-  },
-  disabled: {
-    backgroundColor: '#ccc',
-    shadowOpacity: 0,
-    elevation: 0,
   },
   content: {
     flexDirection: 'row',
