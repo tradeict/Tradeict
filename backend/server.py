@@ -349,6 +349,74 @@ async def send_registration_otp(otp_request: OTPRequest):
     
     return {"message": "OTP sent successfully", "expires_in": 600}
 
+@api_router.post("/auth/forgot-password")
+async def forgot_password(otp_request: OTPRequest):
+    """Send OTP for password reset"""
+    # Check if user exists
+    user = await db.users.find_one({"email": otp_request.email})
+    if not user:
+        raise HTTPException(status_code=404, detail="Email not found")
+    
+    # Don't allow password reset for OAuth users (no password)
+    if not user.get("password_hash"):
+        raise HTTPException(status_code=400, detail="This account uses Google login. Password reset not available.")
+    
+    otp = generate_otp()
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
+    
+    # Store OTP session
+    otp_session = OTPSession(
+        email=otp_request.email,
+        otp=otp,
+        purpose="password_reset",
+        expires_at=expires_at
+    )
+    
+    await db.otp_sessions.insert_one(otp_session.dict())
+    
+    # Send OTP email
+    success = await send_otp_email(otp_request.email, otp, "password reset")
+    
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to send OTP")
+    
+    return {"message": "Password reset OTP sent successfully", "expires_in": 600}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(email: str = Form(...), otp: str = Form(...), new_password: str = Form(...)):
+    """Reset password with OTP verification"""
+    # Verify OTP
+    otp_session = await db.otp_sessions.find_one({
+        "email": email,
+        "otp": otp,
+        "purpose": "password_reset",
+        "verified": False
+    })
+    
+    if not otp_session:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+    
+    if datetime.now(timezone.utc) > otp_session["expires_at"]:
+        raise HTTPException(status_code=400, detail="OTP has expired")
+    
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters long")
+    
+    # Update user password
+    hashed_password = hash_password(new_password)
+    await db.users.update_one(
+        {"email": email},
+        {"$set": {"password_hash": hashed_password}}
+    )
+    
+    # Mark OTP as verified and clean up
+    await db.otp_sessions.update_one(
+        {"id": otp_session["id"]},
+        {"$set": {"verified": True}}
+    )
+    
+    return {"message": "Password reset successfully"}
+
 @api_router.post("/auth/verify-otp")
 async def verify_otp(otp_verify: OTPVerify):
     """Verify OTP for registration"""
