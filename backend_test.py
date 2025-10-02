@@ -13,7 +13,7 @@ import io
 import pandas as pd
 
 # Configuration
-BASE_URL = "https://profit-play-12.preview.emergentagent.com/api"
+BASE_URL = "https://simtrade-hub.preview.emergentagent.com/api"
 
 # Test users
 ADMIN_USER = {
