@@ -173,18 +173,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (email: string, password: string) => {
     try {
-      console.log('Login attempt with email:', email);
-      console.log('API_URL being used:', API_URL);
-      console.log('Full login URL:', `${API_URL}/api/auth/login`);
+      console.log('LOGIN: Starting login attempt');
+      console.log('LOGIN: API_URL =', API_URL);
+      console.log('LOGIN: email =', email);
+      console.log('LOGIN: Full URL =', `${API_URL}/api/auth/login`);
       
-      const response = await axios.post(`${API_URL}/api/auth/login`, {
-        email,
-        password,
+      console.log('LOGIN: About to make fetch request...');
+      
+      // Try basic fetch instead of axios
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       });
+      
+      console.log('LOGIN: Fetch response received, status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('LOGIN: Error response data:', errorData);
+        throw new Error(errorData.detail || 'Login failed');
+      }
+      
+      const data = await response.json();
+      console.log('LOGIN: Success response data:', data);
 
-      console.log('Login response received:', response.status, response.data);
-
-      const { access_token, user: userData, daily_bonus } = response.data;
+      const { access_token, user: userData, daily_bonus } = data;
       
       await AsyncStorage.setItem('auth_token', access_token);
       await AsyncStorage.setItem('user_data', JSON.stringify(userData));
@@ -194,13 +214,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       
+      console.log('LOGIN: Login completed successfully');
       return { dailyBonus: daily_bonus };
     } catch (error: any) {
-      console.error('Login error details:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
-      console.error('Error config:', error.config);
-      throw new Error(error.response?.data?.detail || 'Login failed');
+      console.error('LOGIN: Error occurred:', error);
+      throw new Error(error.message || 'Login failed');
     }
   };
 
