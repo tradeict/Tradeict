@@ -45,7 +45,8 @@
       },
       "eas": {
         "projectId": "your-project-id"
-      }
+      },
+      "EXPO_PUBLIC_BACKEND_URL": "http://localhost:8001"
     }
   }
 }
