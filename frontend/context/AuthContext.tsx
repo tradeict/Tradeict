@@ -51,11 +51,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
-
-console.log('API_URL configured as:', API_URL);
-console.log('Constants.expoConfig?.extra:', Constants.expoConfig?.extra);
-console.log('process.env.EXPO_PUBLIC_BACKEND_URL:', process.env.EXPO_PUBLIC_BACKEND_URL);
+const API_URL = 'http://localhost:8001';
 
 interface AuthProviderProps {
   children: ReactNode;
