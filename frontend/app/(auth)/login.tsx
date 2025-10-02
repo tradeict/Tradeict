@@ -54,14 +54,22 @@ export default function Login() {
   };
 
   const handleLogin = async () => {
+    console.log('HANDLE_LOGIN: Button clicked, starting handleLogin');
+    console.log('HANDLE_LOGIN: email =', email);
+    console.log('HANDLE_LOGIN: password length =', password.length);
+    
     if (!email.trim() || !password.trim()) {
+      console.log('HANDLE_LOGIN: Empty fields detected');
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
+    console.log('HANDLE_LOGIN: Setting loading to true');
     setLoading(true);
     try {
+      console.log('HANDLE_LOGIN: About to call login function');
       const result = await login(email.trim().toLowerCase(), password);
+      console.log('HANDLE_LOGIN: Login function returned result:', result);
       if (result.dailyBonus && result.dailyBonus > 0) {
         Alert.alert(
           'Welcome Back!',
@@ -70,8 +78,10 @@ export default function Login() {
         );
       }
     } catch (error: any) {
+      console.log('HANDLE_LOGIN: Error caught:', error.message);
       Alert.alert('Login Failed', error.message);
     } finally {
+      console.log('HANDLE_LOGIN: Setting loading to false');
       setLoading(false);
     }
   };
