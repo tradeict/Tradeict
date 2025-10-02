@@ -26,6 +26,7 @@ export default function Login() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { login, loginWithGoogle } = useAuth();
+  const router = useRouter();
 
   // Handle deep linking for Google OAuth return
   useEffect(() => {
