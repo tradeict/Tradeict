@@ -13,7 +13,7 @@ import io
 import pandas as pd
 
 # Configuration
-BASE_URL = "https://simtrade-hub.preview.emergentagent.com/api"
+BASE_URL = "http://localhost:8001/api"
 
 # Test users
 ADMIN_USER = {
