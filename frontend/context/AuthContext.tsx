@@ -177,10 +177,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (email: string, password: string) => {
     try {
+      console.log('Login attempt with email:', email);
+      console.log('API_URL being used:', API_URL);
+      console.log('Full login URL:', `${API_URL}/api/auth/login`);
+      
       const response = await axios.post(`${API_URL}/api/auth/login`, {
         email,
         password,
       });
+
+      console.log('Login response received:', response.status, response.data);
 
       const { access_token, user: userData, daily_bonus } = response.data;
       
@@ -194,6 +200,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       return { dailyBonus: daily_bonus };
     } catch (error: any) {
+      console.error('Login error details:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      console.error('Error config:', error.config);
       throw new Error(error.response?.data?.detail || 'Login failed');
     }
   };
