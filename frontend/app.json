@@ -41,7 +41,7 @@
     "scheme": "tradeict",
     "extra": {
       "router": {
-        "origin": false
+        "origin": true
       },
       "eas": {
         "projectId": "your-project-id"
