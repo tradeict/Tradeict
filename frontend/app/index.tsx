@@ -10,12 +10,8 @@ export default function Index() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading) {
-      // Don't redirect if user is trying to access admin route
-      if (pathname === '/admin') {
-        return;
-      }
-      
+    // Only redirect from the root path, don't interfere with other routes
+    if (!loading && pathname === '/') {
       if (user) {
         router.replace('/(tabs)');
       } else {
