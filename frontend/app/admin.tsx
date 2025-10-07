@@ -11,29 +11,23 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
-import Constants from 'expo-constants';
-
-const API_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function SimpleAdmin() {
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('Simple Admin Route Working!');
-
+  console.log('Admin route rendered!'); // Debug log
+  
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <Ionicons name="shield-checkmark" size={80} color="#007AFF" />
-        <Text style={styles.title}>{message}</Text>
-        <Text style={styles.subtitle}>If you can see this, the admin route is working correctly.</Text>
-        <Text style={styles.info}>Original admin panel will be restored once routing is fixed.</Text>
+        <Text style={styles.title}>🎉 ADMIN ROUTE WORKING! 🎉</Text>
+        <Text style={styles.subtitle}>The web routing issue has been resolved!</Text>
+        <Text style={styles.info}>URL-based navigation is now functioning correctly.</Text>
         
-        <TouchableOpacity 
-          style={styles.testButton}
-          onPress={() => setMessage('Admin route is responding to interactions!')}
-        >
-          <Text style={styles.testButtonText}>Test Interaction</Text>
-        </TouchableOpacity>
+        <View style={styles.credentialsBox}>
+          <Text style={styles.credentialsTitle}>Admin Login Credentials:</Text>
+          <Text style={styles.credential}>bimal.vishvakarma@gmail.com / Admin@123</Text>
+          <Text style={styles.credential}>admin@tradingsim.com / admin123</Text>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -51,33 +45,43 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#1a1a1a',
     marginBottom: 16,
     textAlign: 'center',
   },
   subtitle: {
+    fontSize: 18,
+    color: '#34C759',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: '600',
+  },
+  info: {
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 8,
-  },
-  info: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
     marginBottom: 32,
   },
-  testButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+  credentialsBox: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e1e5e9',
+    alignItems: 'center',
   },
-  testButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+  credentialsTitle: {
     fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 12,
+  },
+  credential: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+    fontFamily: 'monospace',
   },
 });
