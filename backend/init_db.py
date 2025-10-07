@@ -256,7 +256,7 @@ async def init_database():
     print("Bimal Admin: bimal.vishvakarma@gmail.com / Admin@123")
     print("Test User: test@example.com / test123")
     
-    print(f"\nAdmin Dashboard URL: https://profit-play-12.preview.emergentagent.com/admin")
+    print(f"\nAdmin Dashboard URL: https://tradify-app-1.preview.emergentagent.com/admin")
     print("Note: Admin dashboard interface will be created in the next phase")
     
     client.close()

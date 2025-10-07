@@ -1,0 +1,73 @@
+<analysis>
+The trajectory details the development of a cross-platform mobile trading simulation app, Tradeict, from inception to a feature-rich state, followed by a significant troubleshooting and stabilization phase. The initial development by the AI engineer established a FastAPI backend and an Expo (React Native) frontend, implementing core features like user authentication, virtual wallets, and strategy browsing.
+
+Subsequently, the user requested major enhancements, including OTP verification, Google AdMob integration for monetization, a new landing page, and password reset functionality. The implementation of Google AdMob proved problematic, causing persistent crashes and failures in the Expo web preview environment. A substantial portion of the later work involved the AI systematically debugging and ultimately removing the AdMob integration to restore application stability.
+
+The final interactions addressed user confusion regarding the temporary nature of the development preview URL versus a permanent production deployment. The AI clarified this distinction and, upon the user's request for a Mobile apk, began guiding them through the process of building a production-ready Android application package using Expo's EAS Build service. The project is now stable, with most features implemented, and the immediate focus is on production asset generation.
+</analysis>
+
+<product_requirements>
+The application, Tradeict, is a cross-platform (iOS/Android) mobile trading simulation platform.
+
+**Core User-Facing Features:**
+-   **Authentication:** Users can register via email/password (with email OTP verification) or Google Social Login. A mobile number is required for all registrations.
+-   **Wallet Management:** Each user receives a virtual money wallet upon registration (0,000 bonus). The wallet distinguishes between the initial virtual balance, profits/earnings from trades, and balance earned from tasks (e.g., 00 for daily login). A separate Investment balance shows funds currently allocated to strategies.
+-   **Trading Simulation:** Users can browse Risky and Guaranteed trading strategies and allocate their virtual money to them. Strategy performance is not live but updated daily based on results uploaded by an admin.
+-   **Coupon Redemption:** Users can redeem their earnings (profits from trades only) for coupons available in a dedicated section. Coupon withdrawal requires email OTP verification.
+-   **Bot Subscription:** Users can request a subscription to a real trading bot based on a strategy. This submits a form to the admin.
+-   **Home/Landing Page:** A dedicated page for logged-out users that explains the app's features and provides options to log in or register.
+
+**Admin Features (Web Dashboard):**
+-   Manage users, strategies, and coupons (CRUD operations).
+-   View and track user subscription requests.
+-   Upload daily trading results (CSV/Excel) to drive the simulation.
+
+**Branding:** The app is named Tradeict and uses a specific logo provided by the user.
+</product_requirements>
+
+<key_technical_concepts>
+- **Full-Stack Architecture:** FastAPI (Python) for the backend API, Expo (React Native) for the cross-platform mobile frontend, and MongoDB for the database.
+- **Authentication:** JSON Web Tokens (JWT) for standard login and Google OAuth for social login. Email-based One-Time Passwords (OTP) for registration and secure transactions.
+- **Mobile Development:** Expo Router for file-based navigation,  for global state management, and platform-aware coding () to handle UI differences.
+- **Backend Services:**  for asynchronous MongoDB operations and  for sending transactional emails (e.g., OTPs).
+</key_technical_concepts>
+
+<code_architecture>
+The project is structured into two main directories:  for the FastAPI server and  for the Expo mobile application.
+
+
+
+-   ****
+    -   **Importance:** This is the heart of the backend, defining all data models (Users, Strategies, Wallets, etc.) and API endpoints for authentication, data retrieval, and user actions.
+    -   **Changes:** Heavily modified from a basic template to include all required models, JWT and Google OAuth endpoints, OTP generation/verification logic, password reset flows, and CRUD operations for the admin panel. A key fix was made to the login endpoint to handle users created before the  field was added, preventing a .
+
+-   ****
+    -   **Importance:** The root component that wraps the entire application. It's used to set up global context providers (like ) and handle app-wide configurations.
+    -   **Changes:** Modified to wrap the app in the . Crucially, it was the focal point of debugging the AdMob integration; all AdMob-related initializations and imports were removed from this file to resolve critical application crashes.
+
+-   ****
+    -   **Importance:** Displays the user's financial status, including virtual money, earnings, task balance, and total investment. It's a key screen for user engagement.
+    -   **Changes:** Updated to display the multiple new balance types requested by the user. It was also modified to conditionally render AdMob components, and later had all AdMob code removed during the stabilization phase. Missing styles were also added.
+
+-   ****
+    -   **Importance:** Serves as the initial entry point for new or logged-out users, providing an overview of the app and clear calls-to-action.
+    -   **Changes:** This was a newly created file to fulfill the user's request for a proper home page, featuring the app logo, feature descriptions, and buttons for login/registration.
+</code_architecture>
+
+<pending_tasks>
+- **Google AdMob Integration:** The feature was requested for monetization but was removed entirely because it caused persistent crashes in the web preview environment. Re-implementing this in a stable way is a major pending task.
+- **Admin CSV/Excel Upload:** The backend API and simulation logic depend on an admin uploading daily trading results via a CSV/Excel file. This feature has been planned but is not implemented.
+- **Full-Featured Admin Dashboard:** A basic admin page was created, but a comprehensive web interface for managing all aspects of the application is still required.
+</pending_tasks>
+
+<current_work>
+Immediately before this summary, the work focused on resolving critical application instability and clarifying deployment procedures for the user. The user reported that the preview URL was inactive and that login/signup functionality was broken.
+
+The AI engineer successfully diagnosed and fixed a  on the backend by updating the login logic in  to handle missing fields for existing users. The persistent frontend crashes were traced to the  package. To stabilize the application, the AI engineer systematically removed all references to AdMob from the frontend components and uninstalled the package entirely.
+
+Following these fixes, the user expressed confusion about why the development preview URL becomes inactive and requested a permanent deployment, specifically a Mobile apk. The AI engineer clarified the distinction between a temporary development environment and a production build. The last action was initiating the process of guiding the user on how to build a production APK for Android using Expo's EAS Build service. The application is now stable, and the focus has shifted to production deployment guidance.
+</current_work>
+
+<optional_next_step>
+Continue providing the user with detailed, step-by-step instructions on how to build the mobile APK using EAS Build, as that was the immediate task at hand.
+</optional_next_step>
