@@ -1,22 +1,28 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import { ActivityIndicator } from 'react-native';
 
 export default function Index() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!loading) {
+      // Don't redirect if user is trying to access admin route
+      if (pathname === '/admin') {
+        return;
+      }
+      
       if (user) {
         router.replace('/(tabs)');
       } else {
         router.replace('/landing');
       }
     }
-  }, [user, loading]);
+  }, [user, loading, pathname]);
 
   return (
     <View style={styles.container}>
