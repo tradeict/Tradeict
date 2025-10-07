@@ -32,6 +32,7 @@ export default function RootLayout() {
           <Stack.Screen name="phone-collection" options={{ headerShown: false }} />
           <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
           <Stack.Screen name="admin" options={{ headerShown: false }} />
+          <Stack.Screen name="test-admin" options={{ headerShown: false }} />
           <Stack.Screen name="index" options={{ headerShown: false }} />
         </Stack>
       </AuthProvider>
